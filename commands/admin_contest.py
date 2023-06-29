@@ -35,16 +35,17 @@ async def top_hundred(message: types.Message):
     await CallbackWait.top_hundred.set()
 
 
-@dp.message_handler(IsAdmin(), commands='give_points')
-async def give_points(message: types.Message):
-    contest = await Contest.get(id=1)
-    point_name = contest.point_name
-    await message.answer(f'Tip protocol initialized. Who would you like to tip with {point_name}? Input username without a "@"')
-    await UserStates.give_points_username.set()
+# @dp.message_handler(IsAdmin(), commands='give_points')
+# async def give_points(message: types.Message):
+#     contest = await Contest.get(id=1)
+#     point_name = contest.point_name
+#     await message.answer(f'Tip protocol initialized. Who would you like to tip with {point_name}? Input username without a "@"')
+#     await UserStates.give_points_username.set()
 
 
 @dp.message_handler(IsAdmin(), commands=['reset_scores'])
 async def reset_scores(message: types.Message):
+    print('asdasdasd')
     await message.answer('Score reset protocol has been initialized. All user scores will be reset to 0. '
                          'Are you sure you would like to proceed? (Y/N)')
     await UserStates.reset_scores.set()

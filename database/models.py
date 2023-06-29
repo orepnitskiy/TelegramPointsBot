@@ -12,6 +12,9 @@ class User(Model):
     banned_until = fields.DatetimeField(null=True)
     already_followed_instagram = fields.BooleanField(default=False)
     already_followed_twitter = fields.BooleanField(default=False)
+    confirmed = fields.BooleanField(default=False)
+    confirmed_username = fields.CharField(max_length=50, null=True, unique=True)
+    bsc = fields.CharField(max_length=100, null=True, unique=True)
 
     class Meta:
         table = 'users'

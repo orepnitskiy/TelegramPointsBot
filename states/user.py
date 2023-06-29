@@ -12,6 +12,22 @@ class UserStates(StatesGroup):
     reset_scores = State()
     reset_statistics = State()
     select_winner = State()
+    user_setup = State()
+    username = State()
+    username_manually = State()
+    USERNAME_CONFIRMED = State()
+    register_wallet = State()
+    register_wallet_confirm = State()
+    register_twitter = State()
+    register_twitter_setup = State()
+    register_instagram = State()
+    register_instagram_setup = State()
+    skip_confirmation = State()
+    make_admin = State()
+    add_admin_yes_no = State()
+    remove_admin = State()
+    remove_admin_yes_no = State()
+
 
 
 class CallbackWait(StatesGroup):
@@ -23,4 +39,4 @@ class CallbackWait(StatesGroup):
     all_scores = State()
     top_ten = State()
     top_hundred = State()
-    add_admin = State()
+    # add_admin = State()

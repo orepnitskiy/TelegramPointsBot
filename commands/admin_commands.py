@@ -2,16 +2,25 @@ from config import dp
 from states import Setup, CallbackWait, UserStates, PointsSetup
 from database import AdminPreferences, Contest, User
 from filters import IsAdmin
-
+from database import Admins
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher import FSMContext
 
 
-@dp.message_handler(Command('abort_command'), state="*")
-async def cmd_finish(message: types.Message, state: FSMContext):
-    await state.finish()
-    await message.answer('Command has been aborted')
+@dp.message_handler(IsAdmin(), commands='give_points')
+async def give_points(message: types.Message):
+    contest = await Contest.get(id=1)
+    point_name = contest.point_name
+    await message.answer(f'Tip protocol initialized. Who would you like to tip with {point_name}?')
+    await UserStates.give_points_username.set()
+
+# @dp.message_handler(Command('abort_command'), state="*")
+# async def cmd_finish(message: types.Message, state: FSMContext):
+#     await state.finish()
+#     await message.answer('Command has been aborted')
+#
+#
 
 
 @dp.message_handler(IsAdmin(), commands='start_setup', state=None)
@@ -50,7 +59,7 @@ async def setup_twitter_hashtag(message: types.Message):
 
 @dp.message_handler(IsAdmin(), commands='setup_instagram')
 async def setup_instagram(message: types.Message):
-    await message.answer('Twitter setup protocol initialized: In order to connect to your Instagram account '
+    await message.answer('Instagram setup protocol initialized: In order to connect to your Instagram account '
                         'well need the API Key. Please input your Instagram API Key for now')
 
     await Setup.setup_instagram.set()
@@ -65,7 +74,7 @@ async def setup_instagram_hashtag(message: types.Message):
     await Setup.setup_instagram_hashtag.set()
 
 
-@dp.message_handler(IsAdmin(), commands='setup_contest_name', state=None)
+@dp.message_handler(IsAdmin(), commands='contest_name', state=None)
 async def setup_contest_name(message: types.Message):
     await message.answer('What is the name of your upcoming contest?')
 
@@ -115,7 +124,7 @@ async def pause_contest(message: types.Message):
     await CallbackWait.pause_contest.set()
 
 
-@dp.message_handler(IsAdmin(), commands='registration_open', state=None)
+@dp.message_handler(IsAdmin(), commands='registration_active', state=None)
 async def open_registration(message: types.Message):
     await message.answer('Are you sure you would like to open user registration? (Y/N)')
     await CallbackWait.open_registration.set()
@@ -133,7 +142,40 @@ async def tg_score_sent_message(message: types.Message):
     await PointsSetup.tg_score_sent_message.set()
 
 
-@dp.message_handler(IsAdmin(), commands='add_admin')
+@dp.message_handler(IsAdmin(), commands='make_admin')
 async def add_admin(message: types.Message):
-    await message.answer('What is the username of the new admin without a "@"')
-    await CallbackWait.add_admin.set()
+    await message.answer('Initializing admin protocol. Please enter the username of the new Admin:')
+    await UserStates.make_admin.set()
+
+
+@dp.message_handler(IsAdmin(), commands='remove_admin')
+async def remove_admin(message: types.Message):
+    await message.answer('Initializing admin protocol. Please enter the username of the new Admin you would like to remove:')
+    await UserStates.remove_admin.set()
+
+@dp.message_handler(IsAdmin(), commands=['admin_list'])
+async def admin_list_command(message: types.Message):
+    # Fetch all admins from the database
+    admins = await Admins.all()
+
+    if admins:
+        admin_list = "\n".join([f"ID: {admin.id}, Username: {admin.username}" for admin in admins])
+        reply_message = f"Current admins:\n{admin_list}"
+    else:
+        reply_message = "There are no admins available."
+
+    # Send the admin list as a reply
+    await message.reply(reply_message)
+
+
+
+
+b'{"carrier":"","city":"","country":"us","port":24000,"state":"","proxy_type":"persist","gb_cost":0.6,"mobile":false,' \
+b'"unblock":false,"whitelist_ips":[],"account_id":"hl_a417b9ef","customer":"hl_a417b9ef","customer_id":"hl_a417b9ef",' \
+b'"zone":"data_center","' \
+b'password":"rmoosphkzb0x"}'
+
+
+# data = {'proxy':{'port':24000,'zone': 'data_center','proxy_type':'persist','customer':'hl_a417b9ef','password':'rmoosphkzb0x','whitelist_ips':[]}}
+# r = requests.put('http://127.0.0.1:22999/api/proxies/24000', data=json.dumps(data))
+# print(r.content)

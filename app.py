@@ -6,6 +6,7 @@ from middlewares import PointsMiddleware, RegistrationMiddleware
 from database import setup_db
 
 
+
 async def on_shutdown(dp):
     await bot.close()
     await storage.close()

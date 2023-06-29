@@ -14,6 +14,7 @@ class Setup(StatesGroup):
     contest_end_date = State()
 
 
+
 class PointsSetup(StatesGroup):
     tg_score_invite = State()
     tg_score_react = State()

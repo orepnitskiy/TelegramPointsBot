@@ -1,3 +1,4 @@
+from commands.admin_commands import add_admin, remove_admin
 from config import dp
 from states import Setup, CallbackWait, UserStates
 from database import AdminPreferences, Contest, User, Admins
@@ -84,7 +85,8 @@ async def answer_top_hundred(message: types.Message, state: FSMContext):
 
 @dp.message_handler(IsAdmin(), state=UserStates.give_points_username)
 async def answer_give_points_username(message: types.Message, state: FSMContext):
-    answer = message.text
+    mes = message.text
+    answer = mes.split('@')[1]
     user = await User.get_or_none(name=answer)
     if user:
         await message.answer(f'Okay how many points would you like to tip {answer}')
@@ -146,8 +148,59 @@ async def answer_select_winner(message: types.Message, state:FSMContext):
         await state.finish()
 
 
-@dp.message_handler(state=CallbackWait.add_admin)
+@dp.message_handler(state=UserStates.make_admin)
 async def answer_add_admin(message: types.Message, state: FSMContext):
-    await Admins.create(username=message.text)
-    await message.answer(f'{message.text} was added to the admin list')
-    await state.finish()
+    if '@' in message.text:
+        account = message.text.split('@')[1]
+    else:
+        account = message.text
+    await message.reply(f'{account} will be promoted to Admin. Is this correct? [Y/N]')
+    await state.update_data(account=account)
+    await UserStates.add_admin_yes_no.set()
+
+@dp.message_handler(state=UserStates.remove_admin)
+async def answer_remove_admin(message: types.Message, state: FSMContext):
+    if '@' in message.text:
+        account = message.text.split('@')[1]
+    else:
+        account = message.text
+    await message.reply(f'{account} will be removed from Admins. Is this correct? [Y/N]')
+    await state.update_data(account=account)
+    await UserStates.remove_admin_yes_no.set()
+
+
+
+@dp.message_handler(state=UserStates.add_admin_yes_no)
+async def add_admin_yes_no(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    account = data.get('account')
+    if message.text.lower() == 'y':
+        await message.reply(f'Confirmed. {account} has been promoted to Admin.')
+        await Admins.create(username=account)
+        await state.finish()
+    elif message.text.lower() == 'n':
+        await message.reply('Sorry about that ')
+        await add_admin(message)
+
+    else:
+        await message.reply("Invalid response. Please select either 'Y' or 'N'.")
+
+
+@dp.message_handler(state=UserStates.remove_admin_yes_no)
+async def remove_admin_yes_no(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    account = data.get('account')
+    if message.text.lower() == 'y':
+        await message.reply(f'Confirmed. {account} has been removed from Admin.')
+        await Admins.delete(username=account)
+        await state.finish()
+    elif message.text.lower() == 'n':
+        await message.reply('Sorry about that ')
+        await remove_admin(message)
+    else:
+        await message.reply("Invalid response. Please select either 'Y' or 'N'.")
+
+
+
+
+
